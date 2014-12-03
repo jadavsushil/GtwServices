@@ -4,13 +4,18 @@
  * @author    Philippe Lafrance
  * @link      http://gintonicweb.com
  */
- 
+App::uses('Folder', 'Utility');
+App::uses('File', 'Utility');
 class ServicesController extends AppController {
 	public $name = 'Services';
 	public $helpers = array('Text','Time','GtwStripe.Stripe');
-	public $uses = array('GtwServices.Service','GtwServices.ServiceFile');
+	public $uses = array('GtwServices.Service','GtwServices.ServiceFile','GtwServices.ServiceCategory');
 
     public function beforeFilter(){
+		echo "<<<";
+		echo Service::Accepted;
+		echo "<<<";
+		exit;
         $this->set('status',$this->Service->status);
 		$this->Auth->allow('upload');
     }	
@@ -23,6 +28,8 @@ class ServicesController extends AppController {
 			'Service' => array(
                 'fields'=>array(
                     'Service.*',                    
+                    'ServiceCategory.id',
+                    'ServiceCategory.name',
                     'User.id',
                     'User.first',
                     'User.email',
@@ -100,7 +107,7 @@ class ServicesController extends AppController {
                         $this->Service->ServiceFile->create();
                         $data = array(
                                     'service_id'=>$serviceId,
-                                    'name'=>$fileName
+                                    'file'=>$fileName
                                 );
                         $this->Service->ServiceFile->save(array('ServiceFile'=>$data));
                     }
@@ -121,6 +128,36 @@ class ServicesController extends AppController {
         $this->set('serviceId',$this->Session->read('tmpServiceId'));
 		$this->set('path',$this->setFilePath($this->Session->read('tmpServiceId')));
     }
+	public function request($serviceCategoryId){
+		if(!empty($this->request->named['transaction'])){
+			$this->Transac = $this->Components->load('GtwStripe.Transac');
+			$transaction = $this->Transac->getLastTransaction($this->request->named['transaction']);
+			if(!empty($transaction)){
+				$this->ServiceCategory->recursive = -1;
+				$category = $this->ServiceCategory->findById($serviceCategoryId);
+				$arrService = array(
+						'user_id' 				=> $this->Session->read('Auth.User.id'),
+						'service_category_id' 	=> $category['ServiceCategory']['id'],
+						'title' 				=> $category['ServiceCategory']['name'],
+						'description' 			=> $category['ServiceCategory']['description'],
+						'price' 				=> $category['ServiceCategory']['price'],
+						'status' 				=> 2,
+						'transaction_id' 		=> $transaction['Transaction']['id'],
+					);
+				$this->Service->save(array('Service'=>$arrService),false);
+				 $this->Session->setFlash(__('Thank you for payment, Your request will proceed soon.<br>Upload your files'), 'alert', array(
+					'plugin' => 'BoostCake',
+					'class' => 'alert-success'
+				));
+				$this->redirect(array('plugin'=>'gtw_services','controller'=>'services','action'=>'edit',$this->Service->id));
+			}
+		}
+		$this->Session->setFlash(__('Unable to process your payment request, Please try again'), 'alert', array(
+					'plugin' => 'BoostCake',
+					'class' => 'alert-danger'
+				)); 
+		$this->redirect($this->referer());
+	}
 	public function quote($serviceId=0) {
 		if ($this->request->is('post') || $this->request->is('put')) {
 			$this->request->data['Service']['status'] = 1;
@@ -183,7 +220,7 @@ class ServicesController extends AppController {
         $this->layout = 'ajax';
         //Get Files from Database
         if(is_numeric($serviceId)){
-            $serviceFiles = $this->Service->ServiceFile->find('list',array('conditions'=>array('service_id'=>$serviceId),'recursive'=>-1));
+            $serviceFiles = $this->Service->ServiceFile->find('list',array('fields'=>array('id','file'),'conditions'=>array('service_id'=>$serviceId),'recursive'=>-1));
             $this->set(compact('serviceFiles'));
         }
         $this->set(compact('serviceId'));
@@ -198,7 +235,7 @@ class ServicesController extends AppController {
                 if(is_numeric($serviceId)){
                     $data = array(
                                 'service_id'=>$serviceId,
-                                'name'=>$fileName
+                                'file'=>$fileName
                             );
                     $this->Service->ServiceFile->save(array('ServiceFile'=>$data));
                 }else{

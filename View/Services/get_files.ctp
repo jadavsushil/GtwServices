@@ -1,8 +1,8 @@
 <div>
     <?php 
         $flag = false;
-        if(isset($orderFiles)){
-            foreach($orderFiles as $id=>$file){
+        if(isset($serviceFiles)){
+            foreach($serviceFiles as $id=>$file){
                 echo $this->element('service_file',array('name'=>$path['url'].$file));
                 $flag = true;
             }

@@ -25,7 +25,7 @@ define(function(require){
 				$('#serviceFiles').uploadify({
 					'uploader'  : require.toUrl("./uploadify.swf"),
 					'script'    : uploadifySetting.script,
-					//'cancelImg' : '<i class="icon-remove-sign"></i>',
+					'cancelImg' : require.toUrl("../img/cancel.png"),
 					'buttonText' : uploadifySetting.buttonText,
 					'sizeLimit' : 1024*1024*10,
 					'auto'      : true,

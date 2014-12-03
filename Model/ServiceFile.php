@@ -6,7 +6,7 @@
  */
 class ServiceFile extends AppModel {
 	var $name = 'ServiceFile';
-	
+	public $displayField = 'file';
 	var $belongsTo = array(
 		'Service' => array(
 			'className' => 'Service',
