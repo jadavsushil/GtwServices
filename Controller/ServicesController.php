@@ -12,10 +12,6 @@ class ServicesController extends AppController {
 	public $uses = array('GtwServices.Service','GtwServices.ServiceFile','GtwServices.ServiceCategory');
 
     public function beforeFilter(){
-		echo "<<<";
-		echo Service::Accepted;
-		echo "<<<";
-		exit;
         $this->set('status',$this->Service->status);
 		$this->Auth->allow('upload');
     }	
