@@ -250,7 +250,7 @@ class ServicesController extends AppController {
 		$arrPath = array();
 		$path = WWW_ROOT.'files'.DS.'services'.DS.(is_numeric($serviceId)?$serviceId:'tmp'.DS.$serviceId).DS;
 		if(!file_exists($path) && !is_dir($path)){
-			mkdir($path,'0777',true);
+			mkdir($path,0777,true);
 		}
 		$arrPath['dir'] = $path;
 		
