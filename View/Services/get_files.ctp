@@ -1,20 +1,10 @@
 <div>
-    <?php 
-        $flag = false;
+    <?php
         if(isset($serviceFiles)){
             foreach($serviceFiles as $id=>$file){
-                echo $this->element('service_file',array('name'=>$path['url'].$file));
-                $flag = true;
+                echo $this->element('service_file',array('path' =>$path,'dir'=>$file['File']['dir'],'name'=>$file['File']['filename']));
             }
-        }else{
-            foreach(scandir($path['dir']) as $k=>$file){
-                if(!in_array($file,array('.','..','.svn')) && !is_dir($path['dir'].DS.$file)){
-                    echo $this->element('service_file',array('name'=>$path['url'].$file));
-                    $flag = true;
-                }
-            }
-        }
-        if(!$flag){
+        } else {
             echo 'No file uploaded yet.';
         }
     ?>
